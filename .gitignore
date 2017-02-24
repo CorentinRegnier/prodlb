@@ -1,7 +1,0 @@
-sites/*/settings*.php
-sites/*/files/php
-sites/*/files/js
-sites/*/files/css
-sites/simpletest
-.idea
-
