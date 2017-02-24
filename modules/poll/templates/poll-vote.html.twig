@@ -1,0 +1,23 @@
+{#
+/**
+ */
+#}
+{{ form.messages }}
+<div class="poll-homepage">
+    <div class="poll">
+        <p>{{ 'Sondage'|upper }} proposé par {{ Author }}</p>
+        <p class="title">Qu'attendez-vous principalement d'un livre blanc ?</p>
+        <div class="vote-form">
+            {% if show_question %}
+                <h3 class="poll-question">{{ question }}</h3>
+            {% endif %}
+
+            {{ form.choice }}
+
+            {{ form.actions }}
+        </div>
+        <span>{{ 'Déjà'|t }} {{ votes }} {{ 'avis et vous ?'|t }}</span>
+
+        {{ form|without('actions', 'choice', 'messages', 'question') }}
+    </div>
+</div>

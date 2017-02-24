@@ -1,0 +1,6 @@
+name: Formulaire publication livre blanc
+description: Ajout d'un livre blanc en FO
+package: Livres Blancs
+
+type: module
+core: 8.x

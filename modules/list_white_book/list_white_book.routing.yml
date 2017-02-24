@@ -1,0 +1,7 @@
+lb-form.formajoutlb:
+    path: '/liste-livres-blancs'
+    defaults:
+        _controller: '\Drupal\list_white_book\Controller\ListeWhiteBookController::listWhiteBookContent'
+        _title: 'Liste des livres blancs'
+    requirements:
+        _permission: 'access content'

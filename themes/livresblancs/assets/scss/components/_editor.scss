@@ -1,0 +1,36 @@
+// Nouveaux livres blancs publiés
+// -----------------------------------------------------------------------------
+.info-editor {
+    border-width: 0px;
+    border-style: solid;
+    background-color: #F3F8FC;
+    font-size: 13px;
+}
+
+.title-editor {
+    font-size: 28px;
+    color: #0065b3;
+    padding-bottom: 15px;
+    font-weight: bold;
+}
+
+.editor-site-url {
+    a:hover {
+        text-decoration: none;
+        opacity: 0.7;
+        transition: 0.3s;
+        transition-timing-function: linear;
+    }
+}
+
+@media (max-width: $screen-lg-desktop - 1) {
+
+}
+
+@media (max-width: $screen-desktop - 1) {
+
+}
+
+@media (max-width: $screen-tablet - 1) {
+
+}

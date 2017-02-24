@@ -1,0 +1,31 @@
+// Styles for Comment
+// -----------------------------------------------------------------------------
+
+.create-account:hover {
+    opacity: 0.7;
+    transition: 0.3s;
+    transition-timing-function: linear;
+}
+
+.add {
+    font-size: 12px;
+    color: rgb(102, 102, 102);
+    text-align: center;
+}
+
+@media (max-width: $screen-lg-desktop) {
+    .view--view-publicite-large--block-1 {
+        display: none;
+    }
+
+    .img-add {
+        width: 100%;
+    }
+}
+
+@media (max-width: $screen-desktop) {
+
+    .img-add {
+        width: 275%;
+    }
+}

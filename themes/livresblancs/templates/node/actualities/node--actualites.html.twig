@@ -1,0 +1,157 @@
+{#
+/**
+ * @file
+ * Theme override to display a node.
+ *
+ * Available variables:
+ * - node: The node entity with limited access to object properties and methods.
+     Only "getter" methods (method names starting with "get", "has", or "is")
+     and a few common methods such as "id" and "label" are available. Calling
+     other methods (such as node.delete) will result in an exception.
+ * - label: The title of the node.
+ * - content: All node items. Use {{ content }} to print them all,
+ *   or print a subset such as {{ content.field_example }}. Use
+ *   {{ content|without('field_example') }} to temporarily suppress the printing
+ *   of a given child element.
+ * - author_picture: The node author user entity, rendered using the "compact"
+ *   view mode.
+ * - metadata: Metadata for this node.
+ * - date: Themed creation date field.
+ * - author_name: Themed author name field.
+ * - url: Direct URL of the current node.
+ * - display_submitted: Whether submission information should be displayed.
+ * - attributes: HTML attributes for the containing element.
+ *   The attributes.class element may contain one or more of the following
+ *   classes:
+ *   - node: The current template type (also known as a "theming hook").
+ *   - node--type-[type]: The current node type. For example, if the node is an
+ *     "Article" it would result in "node--type-article". Note that the machine
+ *     name will often be in a short form of the human readable label.
+ *   - node--view-mode-[view_mode]: The View Mode of the node; for example, a
+ *     teaser would result in: "node--view-mode-teaser", and
+ *     full: "node--view-mode-full".
+ *   The following are controlled through the node publishing options.
+ *   - node--promoted: Appears on nodes promoted to the front page.
+ *   - node--sticky: Appears on nodes ordered above other non-sticky nodes in
+ *     teaser listings.
+ *   - node--unpublished: Appears on unpublished nodes visible only to site
+ *     admins.
+ * - title_attributes: Same as attributes, except applied to the main title
+ *   tag that appears in the template.
+ * - content_attributes: Same as attributes, except applied to the main
+ *   content tag that appears in the template.
+ * - author_attributes: Same as attributes, except applied to the author of
+ *   the node tag that appears in the template.
+ * - title_prefix: Additional output populated by modules, intended to be
+ *   displayed in front of the main title tag that appears in the template.
+ * - title_suffix: Additional output populated by modules, intended to be
+ *   displayed after the main title tag that appears in the template.
+ * - view_mode: View mode; for example, "teaser" or "full".
+ * - teaser: Flag for the teaser state. Will be true if view_mode is 'teaser'.
+ * - page: Flag for the full page state. Will be true if view_mode is 'full'.
+ * - readmore: Flag for more state. Will be true if the teaser content of the
+ *   node cannot hold the main body content.
+ * - logged_in: Flag for authenticated user status. Will be true when the
+ *   current user is a logged-in member.
+ * - is_admin: Flag for admin user status. Will be true when the current user
+ *   is an administrator.
+ *
+ * @see template_preprocess_node()
+ *
+ * @todo Remove the id attribute (or make it a class), because if that gets
+ *   rendered twice on a page this is invalid CSS for example: two lists
+ *   in different view modes.
+ */
+#}
+{% set bundle = node.bundle|clean_class %}
+{% set classes = [
+'node',
+bundle,
+node.isPromoted() ? bundle ~ '--promoted',
+node.isSticky() ? bundle ~ '--sticky',
+not node.isPublished() ? bundle ~ '--unpublished',
+view_mode ? bundle ~ '--' ~ view_mode|clean_class,
+] %}
+<div class="row item-white-book">
+    <div class="pl-15 pr-15 pb-30">
+        <nav role="navigation" aria-labelledby="system-breadcrumb">
+            <h2 id="system-breadcrumb" class="visually-hidden">Fil d'Ariane</h2>
+            <ol class="breadcrumb pl-0 mb-0">
+                <li>
+                    <a href="/">Accueil</a>
+                </li>
+                <li>
+                    <a href="#">Actualités</a>
+                </li>
+                <li>
+                    <strong>{{ node.getTitle }}</strong>
+                </li>
+            </ol>
+        </nav>
+    </div>
+    <div class="col-md-8">
+        <div class="row pl-15 pr-15">
+            <div class="col-md-6 pl-0 txt-center-actuality">
+                <a id="actuality-fancybox" href="{{ file_url(node.field_couverture.0.entity.uri.value) }}">
+                    <img class="actualities-picture" width="360"
+                         src="{{ file_url(node.field_couverture.0.entity.uri.value) }}"
+                         alt="{{ node.getTitle }}"/>
+                </a>
+            </div>
+            <p class="blue-text mb-0 txt-center-actuality">
+                {{ node.date|date('d/m/Y') }} | <strong>{{ node.field_categorie.entity.name.value }}</strong>
+            </p>
+            <h3 class="big-black-text">
+                <strong>{{ node.getTitle }}</strong>
+            </h3>
+            <p class="medium-gray-text"><strong>{{ node.field_description.value }}</strong></p>
+
+        </div>
+        <div class="content-actuality">
+            <p class="small-medium-gray-text">
+                {{ node.field_content_actualities.value|raw }}
+            </p>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-6">
+                        {% if node.get('field_file').0.entity.uri.value != null %}
+                            <a target="_blank" class="button-download pl-10 pr-10 pt-10 pb-10"
+                               href="{{ file_url(node.get('field_file').0.entity.uri.value) }}"
+                               download="{{ node.getTitle() }}">
+                                Télécharger un pdf<i class="material-icons ico-butt-download">&#xE2C4;</i>
+                            </a>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {% if node.get('field_lien_url').value.0.uri != null %}
+                            <a target="_blank" class="button-download"
+                               href="{{ file_url(node.get('field_lien_url').value.0.uri) }}">
+                                Lien vers une URL<i class="material-icons ico-butt-download">arrow_forward</i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <span class="share-social-link pull-right">
+                    Partagez cet article :
+                        <i class="fa fb-share-button fa-facebook-square social-link facebook ml-5 mr-5 "
+                           aria-hidden="true"></i>
+                    <i class="fa fa-twitter-square social-link twitter mr-5" aria-hidden="true"></i>
+                    <i class="fa fa-google-plus-square social-link google-plus mr-5" aria-hidden="true"></i>
+                    <i class="fa fa-linkedin-square social-link linkedin mr-5" aria-hidden="true"></i>
+                    <i class="fa fa-pinterest-square social-link pinterest mr-5" aria-hidden="true"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="add">
+            {% for thisAdd in add %}
+                <div>Publicité</div>
+                <img width="336" src="{{ file_url(thisAdd.field_image_pub.0.entity.uri.value) }}"
+                     alt="{{ thisAdd.title.value }}"/>
+            {% endfor %}
+        </div>

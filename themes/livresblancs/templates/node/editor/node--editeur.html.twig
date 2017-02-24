@@ -1,0 +1,373 @@
+{#
+/**
+ * @file
+ * Theme override to display a node.
+ *
+ * Available variables:
+ * - node: The node entity with limited access to object properties and methods.
+     Only "getter" methods (method names starting with "get", "has", or "is")
+     and a few common methods such as "id" and "label" are available. Calling
+     other methods (such as node.delete) will result in an exception.
+ * - label: The title of the node.
+ * - content: All node items. Use {{ content }} to print them all,
+ *   or print a subset such as {{ content.field_example }}. Use
+ *   {{ content|without('field_example') }} to temporarily suppress the printing
+ *   of a given child element.
+ * - author_picture: The node author user entity, rendered using the "compact"
+ *   view mode.
+ * - metadata: Metadata for this node.
+ * - date: Themed creation date field.
+ * - author_name: Themed author name field.
+ * - url: Direct URL of the current node.
+ * - display_submitted: Whether submission information should be displayed.
+ * - attributes: HTML attributes for the containing element.
+ *   The attributes.class element may contain one or more of the following
+ *   classes:
+ *   - node: The current template type (also known as a "theming hook").
+ *   - node--type-[type]: The current node type. For example, if the node is an
+ *     "Article" it would result in "node--type-article". Note that the machine
+ *     name will often be in a short form of the human readable label.
+ *   - node--view-mode-[view_mode]: The View Mode of the node; for example, a
+ *     teaser would result in: "node--view-mode-teaser", and
+ *     full: "node--view-mode-full".
+ *   The following are controlled through the node publishing options.
+ *   - node--promoted: Appears on nodes promoted to the front page.
+ *   - node--sticky: Appears on nodes ordered above other non-sticky nodes in
+ *     teaser listings.
+ *   - node--unpublished: Appears on unpublished nodes visible only to site
+ *     admins.
+ * - title_attributes: Same as attributes, except applied to the main title
+ *   tag that appears in the template.
+ * - content_attributes: Same as attributes, except applied to the main
+ *   content tag that appears in the template.
+ * - author_attributes: Same as attributes, except applied to the author of
+ *   the node tag that appears in the template.
+ * - title_prefix: Additional output populated by modules, intended to be
+ *   displayed in front of the main title tag that appears in the template.
+ * - title_suffix: Additional output populated by modules, intended to be
+ *   displayed after the main title tag that appears in the template.
+ * - view_mode: View mode; for example, "teaser" or "full".
+ * - teaser: Flag for the teaser state. Will be true if view_mode is 'teaser'.
+ * - page: Flag for the full page state. Will be true if view_mode is 'full'.
+ * - readmore: Flag for more state. Will be true if the teaser content of the
+ *   node cannot hold the main body content.
+ * - logged_in: Flag for authenticated user status. Will be true when the
+ *   current user is a logged-in member.
+ * - is_admin: Flag for admin user status. Will be true when the current user
+ *   is an administrator.
+ *
+ * @see template_preprocess_node()
+ *
+ * @todo Remove the id attribute (or make it a class), because if that gets
+ *   rendered twice on a page this is invalid CSS for example: two lists
+ *   in different view modes.
+ */
+#}
+{% set bundle = node.bundle|clean_class %}
+{% set classes = [
+'node',
+bundle,
+node.isPromoted() ? bundle ~ '--promoted',
+node.isSticky() ? bundle ~ '--sticky',
+not node.isPublished() ? bundle ~ '--unpublished',
+view_mode ? bundle ~ '--' ~ view_mode|clean_class,
+] %}
+<div class="row">
+    <div class="pl-15 pr-15 pb-30">
+        <nav role="navigation" aria-labelledby="system-breadcrumb">
+            <h2 id="system-breadcrumb" class="visually-hidden">Fil d'Ariane</h2>
+            <ol class="breadcrumb pl-0 mb-0">
+                <li>
+                    <a href="/">Accueil</a>
+                </li>
+                <li>
+                    <a href="#">Editeurs</a>
+                </li>
+                <li>
+                    <strong>{{ node.getTitle }}</strong>
+                </li>
+            </ol>
+        </nav>
+    </div>
+    <div class="col-md-3">
+        <div>
+            <img width="178px"
+                 src="{{ file_url((node.field_logo.0.entity.uri.value)) }}"
+                 alt="{{ node.getTitle() }}"/>
+        </div>
+        <div class="info-editor color-gray pr-10 pt-10 pl-10 pb-10">
+            <div class="pb-10">
+                <span class="color-blue">
+                    <strong>
+                        A propos de {{ node.getTitle() }}
+                    </strong>
+                </span>
+            </div>
+            <div>
+                Forme juridique :
+                <span class="color-blue">
+                    {{ node.field_forme_juridique.value }}
+                </span>
+            </div>
+            <div>
+                Date de création :
+                <span class="color-blue">
+                    {{ node.field_date.value|date('Y') }}
+                </span>
+            </div>
+            <div>
+                Type de société :
+                <span class="color-blue">
+                    {{ node.field_type_de_societe.value }}
+                </span>
+            </div>
+            <div>
+                Secteur d'activité :
+                <span class="color-blue">
+                    {{ node.field_secteur_d_activite.value }}
+                </span>
+            </div>
+            <div>
+                Chiffre d'affaires :
+                <span class="color-blue">
+                    {{ node.field_chiffre_d_affaires.value }}
+                </span>
+            </div>
+            <div>
+                Effectif(s) :
+                <span class="color-blue">
+                    {{ node.field_effectif.value }}
+                </span>
+            </div>
+            <div>
+                Etablissement(s) :
+                <span class="color-blue">
+                    {{ node.field_etablissement.value }}
+                </span>
+            </div>
+            <div>
+                Pays :
+                <span class="color-blue">
+                    {{ node.field_pays.value }}
+                </span>
+            </div>
+            <div>
+                Ville :
+                <span class="color-blue">
+                    {{ node.field_ville.value }}
+                </span>
+            </div>
+        </div>
+        <div class="pt-15 pb-5">
+            <div class="color-gray">
+                Métiers & expertises :
+            </div>
+            <div>
+                {% for keyWord in node.get('field_metiers_expertises') %}
+                    <span class="keywords">
+                        {{ keyWord.value|upper }}
+                    </span>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="pt-15 pb-5">
+            <div class="editor-site-url">
+                <a target="_blank" href="{{ node.field_lien_url.uri }}">
+                    <strong>{{ node.field_lien_url.uri }}</strong>
+                </a>
+            </div>
+        </div>
+        <div class="pt-15 pb-5">
+            <span class="share-social-link">
+                <a target="_blank" href="{{ node.field_facebook.uri }}">
+                    <i class="fa fb-share-button fa-facebook-square social-link facebook ml-5 mr-5 "
+                       aria-hidden="true"></i>
+                </a>
+                <a target="_blank" href="{{ node.field_twitter.uri }}">
+                    <i class="fa fa-twitter-square social-link twitter mr-5" aria-hidden="true"></i>
+                </a>
+                <a target="_blank" href="{{ node.field_google_.uri }}">
+                    <i class="fa fa-google-plus-square social-link google-plus mr-5" aria-hidden="true"></i>
+                </a>
+                <a target="_blank" href="{{ node.field_linkedin.uri }}">
+                    <i class="fa fa-linkedin-square social-link linkedin mr-5" aria-hidden="true"></i>
+                </a>
+                <a target="_blank" href="{{ node.field_pinterest.uri }}">
+                    <i class="fa fa-pinterest-square social-link pinterest mr-5" aria-hidden="true"></i>
+                </a>
+            </span>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="title-editor">
+            {{ node.getTitle() }}
+        </div>
+        {% if node.field_bandeau.0.entity.uri.value != null %}
+            <div class="pb-15">
+                <img width="100%"
+                     src="{{ file_url(node.field_bandeau.0.entity.uri.value) }}"
+                     alt="{{ node.getTitle() }}"/>
+            </div>
+        {% endif %}
+        <div class="pb-15 resume">
+            <strong>{{ node.field_resume_editeur.value }}</strong>
+        </div>
+        <div class="pb-15 description">
+            {{ node.field_contenu.value }}
+        </div>
+        <div>
+
+            {% for whiteBook in editor_all_white_books %}
+                {% if loop.index == 1 %}
+                    <div class="large-text uppercase pb-15">
+                        {{ node.getTitle() }} propose <strong>{{ editor_all_white_books|length }} livres blancs</strong>
+                    </div>
+                {% endif %}
+                {% if loop.index <= 3 %}
+                    <div class="row">
+                        <div class="col-lg-3 col-md-4 col-sm-3">
+                            <img width="200" height="285" src="{{ file_url(whiteBook.field_image.0.entity.uri.value) }}"
+                                 alt="{{ whiteBook.getTitle() }}"/>
+                        </div>
+                        <div class="col-lg-9 col-md-8 col-sm-8 info-book">
+                            <div class="adapt-width">
+                                <h3 class="mt-0">
+                                    <a href="{{ whiteBook.uri }}" class="title" rel="bookmark">
+                                        {{ whiteBook.label }}
+                                    </a>
+                                </h3>
+                                <p>
+                            <span class="sub-title">
+                                {{ createdDate|date('d/m/Y') }} |
+                                <span class="author">
+                                    {% for editor in this_editor %}
+                                        {% if loop.index == 1 %}
+                                            <a href="{{ path('entity.node.canonical', {'node': node.id}) }}">{{ node
+                                                .getTitle() }}</a>
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
+                                    |
+                                <strong>{{ whiteBook.get('field_categorie_principale').entity.name.value }}</strong>
+                            </span>
+                                    <span class="download gray-text"><i
+                                                class="material-icons">file_download</i>
+                                <span class="black-text">
+                                    {{ whiteBook.get('field_download_count').value }}
+                                </span>
+                                <span class="rate-yellow">
+                                    {% if ((moyenne_evaluation)/2) > 0
+                                    and ((moyenne_evaluation)/2) <= 0.5 %}
+                                        <i class="material-icons">star_half</i>
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                    {% elseif ((moyenne_evaluation)/2) > 0.5
+                                    and ((moyenne_evaluation)/2) <= 1 %}
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                    {% elseif ((moyenne_evaluation)/2) > 1
+                                    and ((moyenne_evaluation)/2) <= 1.5 %}
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star_half</i>
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                    {% elseif ((moyenne_evaluation)/2) > 1.5
+                                    and ((moyenne_evaluation)/2) <= 2 %}
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                    {% elseif ((moyenne_evaluation)/2) > 2
+                                    and ((moyenne_evaluation)/2) <= 2.5 %}
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star_half</i>
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                    {% elseif ((moyenne_evaluation)/2) > 2.5
+                                    and ((moyenne_evaluation)/2) <= 3 %}
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                    {% elseif ((moyenne_evaluation)/2) > 3
+                                    and ((moyenne_evaluation)/2) <= 3.5 %}
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star_half</i>
+                                        <i class="material-icons">star_border</i>
+                                    {% elseif ((moyenne_evaluation)/2) > 3.5
+                                    and ((moyenne_evaluation)/2) <= 4 %}
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star_border</i>
+                                    {% elseif ((moyenne_evaluation)/2) > 4
+                                    and ((moyenne_evaluation)/2) <= 4.5 %}
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star_half</i>
+                                    {% elseif ((moyenne_evaluation)/2) > 4.5
+                                    and ((moyenne_evaluation)/2) <= 5 %}
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                        <i class="material-icons">star</i>
+                                    {% else %}
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                        <i class="material-icons">star_border</i>
+                                    {% endif %}
+                                </span>
+                                </span>
+                                </p>
+                                <div class="mt-10 mb-20">
+                                    {% for keyWord in whiteBook.get('field_key_words') %}
+                                        <span class="keywords">
+                                        {{ keyWord.value|upper }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                                <div class="resume">
+                                    <p>
+                                        {{ whiteBook.get('field_resume').value }}
+                                    </p>
+                                </div>
+                                <div class="vt-bottom">
+                                    <a target="_blank" class="button-download vt-bottom" href="
+                                    {% if logged_in %}
+                                        {{ file_url(whiteBook.get('field_file').0.entity.uri.value) }}"
+                                       download="{{ whiteBook.getTitle() }}"
+                                    {% else %}
+                                        {{ url('user.login') }}"
+                                    {% endif %}
+                                    >
+                                    Télécharger <i class="material-icons ico-butt-download">file_download</i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="pt-30 pb-30">
+            <a class="back-btn" href="javascript:history.go(-1)">Retour</a>
+        </div>
+    </div>
+</div>

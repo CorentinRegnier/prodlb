@@ -1,0 +1,6 @@
+name: Liste des livres blancs
+description: Liste des livres blancs - Front Office
+package: Livres Blancs
+
+type: module
+core: 8.x

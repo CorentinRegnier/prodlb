@@ -1,0 +1,8 @@
+lb-form.formajoutlb:
+  path: '/publication-livre-blanc'
+  defaults:
+    _controller: '\Drupal\lb_form\Controller\WhiteBookController::content'
+    _title: 'Ajouter un livre blanc'
+  requirements:
+    #_user_is_logged_in: 'TRUE'
+     _permission: 'access content'

@@ -1,0 +1,24 @@
+// Styles for Header
+// -----------------------------------------------------------------------------
+
+header {
+    position: relative;
+    height: 100px;
+    display: block;
+
+    img {
+        width: 200px;
+        height: auto;
+        position: relative;
+    }
+    .container-fluid {
+        padding-right: 0px;
+        padding-left: 0px;
+    }
+}
+
+@media (max-width: $screen-desktop - 1) {
+    header {
+        height: inherit;
+    }
+}

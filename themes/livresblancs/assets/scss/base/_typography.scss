@@ -1,0 +1,116 @@
+// Typography
+// -----------------------------------------------------------------------------
+
+.mt-10 {
+    margin-top: 10px;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+.vt-bottom {
+    vertical-align: bottom;
+}
+
+h2 {
+    font-size: 18px;
+    color: #666666;
+    text-transform: uppercase;
+    font-weight: 300;
+}
+
+.blue-text {
+    color: #0065b3;
+    font-size: 16px;
+}
+
+.big-black-text {
+    color: rgb(0, 0, 0);
+    font-size: 28px;
+
+    &:hover {
+        color: rgb(0, 101, 179);
+
+        opacity: 0, 7;
+        transition: 0.3s;
+        transition-timing-function: linear;
+    }
+}
+
+.color-blue {
+    color: #0065B3;
+}
+
+.size-14 {
+    font-size: 14px;
+}
+
+.small-text {
+    color: #666666;
+    font-size: 12px;
+}
+
+.large-text {
+    color: #666666;
+    font-size: 18px;
+}
+
+.color-gray {
+    color: #666666;
+}
+
+.color-blue {
+    color: #0065B3;
+}
+
+.medium-gray-text {
+    font-size: 16px;
+    color: #666;
+}
+
+.small-medium-gray-text {
+    font-size: 15px;
+    color: #666;
+}
+
+.gray-text {
+    font-size: 13px;
+    color: #aaa;
+}
+
+.black-text {
+    font-size: 13px;
+    color: #666;
+}
+
+.keywords {
+    display: inline-block;
+    background-color: rgb(238, 238, 238);
+    border-color: rgb(102, 102, 102);
+    border-width: 0px;
+    border-radius: 0px;
+    border-style: solid;
+    color: rgb(102, 102, 102);
+    font-weight: bold;
+    font-size: 8px;
+    text-align: center;
+    margin: 2px 1px;
+    padding: 6px 10px;
+}
+
+.font-weight-300 {
+    font-weight: 300;
+}
+
+.font-weight-500 {
+    font-weight: 500;
+}
+
+.font-weight-700 {
+    font-weight: 700;
+}
+
+.font-weight-900 {
+    font-weight: 900;
+}

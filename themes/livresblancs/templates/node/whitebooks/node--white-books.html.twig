@@ -1,0 +1,458 @@
+{#
+/**
+ * @file
+ * Theme override to display a node.
+ *
+ * Available variables:
+ * - node: The node entity with limited access to object properties and methods.
+     Only "getter" methods (method names starting with "get", "has", or "is")
+     and a few common methods such as "id" and "label" are available. Calling
+     other methods (such as node.delete) will result in an exception.
+ * - label: The title of the node.
+ * - content: All node items. Use {{ content }} to print them all,
+ *   or print a subset such as {{ content.field_example }}. Use
+ *   {{ content|without('field_example') }} to temporarily suppress the printing
+ *   of a given child element.
+ * - author_picture: The node author user entity, rendered using the "compact"
+ *   view mode.
+ * - metadata: Metadata for this node.
+ * - date: Themed creation date field.
+ * - author_name: Themed author name field.
+ * - url: Direct URL of the current node.
+ * - display_submitted: Whether submission information should be displayed.
+ * - attributes: HTML attributes for the containing element.
+ *   The attributes.class element may contain one or more of the following
+ *   classes:
+ *   - node: The current template type (also known as a "theming hook").
+ *   - node--type-[type]: The current node type. For example, if the node is an
+ *     "Article" it would result in "node--type-article". Note that the machine
+ *     name will often be in a short form of the human readable label.
+ *   - node--view-mode-[view_mode]: The View Mode of the node; for example, a
+ *     teaser would result in: "node--view-mode-teaser", and
+ *     full: "node--view-mode-full".
+ *   The following are controlled through the node publishing options.
+ *   - node--promoted: Appears on nodes promoted to the front page.
+ *   - node--sticky: Appears on nodes ordered above other non-sticky nodes in
+ *     teaser listings.
+ *   - node--unpublished: Appears on unpublished nodes visible only to site
+ *     admins.
+ * - title_attributes: Same as attributes, except applied to the main title
+ *   tag that appears in the template.
+ * - content_attributes: Same as attributes, except applied to the main
+ *   content tag that appears in the template.
+ * - author_attributes: Same as attributes, except applied to the author of
+ *   the node tag that appears in the template.
+ * - title_prefix: Additional output populated by modules, intended to be
+ *   displayed in front of the main title tag that appears in the template.
+ * - title_suffix: Additional output populated by modules, intended to be
+ *   displayed after the main title tag that appears in the template.
+ * - view_mode: View mode; for example, "teaser" or "full".
+ * - teaser: Flag for the teaser state. Will be true if view_mode is 'teaser'.
+ * - page: Flag for the full page state. Will be true if view_mode is 'full'.
+ * - readmore: Flag for more state. Will be true if the teaser content of the
+ *   node cannot hold the main body content.
+ * - logged_in: Flag for authenticated user status. Will be true when the
+ *   current user is a logged-in member.
+ * - is_admin: Flag for admin user status. Will be true when the current user
+ *   is an administrator.
+ *
+ * @see template_preprocess_node()
+ *
+ * @todo Remove the id attribute (or make it a class), because if that gets
+ *   rendered twice on a page this is invalid CSS for example: two lists
+ *   in different view modes.
+ */
+#}
+{% set bundle = node.bundle|clean_class %}
+{% set classes = [
+'node',
+bundle,
+node.isPromoted() ? bundle ~ '--promoted',
+node.isSticky() ? bundle ~ '--sticky',
+not node.isPublished() ? bundle ~ '--unpublished',
+view_mode ? bundle ~ '--' ~ view_mode|clean_class,
+] %}
+<div class="row item-white-book">
+    <div class="pl-15 pr-15 pb-30">
+        <nav role="navigation" aria-labelledby="system-breadcrumb">
+            <h2 id="system-breadcrumb" class="visually-hidden">Fil d'Ariane</h2>
+            <ol class="breadcrumb pl-0 mb-0">
+                <li>
+                    <a href="/">Accueil</a>
+                </li>
+                <li>
+                    <a href="#">Livres blancs</a>
+                </li>
+                <li>
+                    <strong>{{ node.getTitle }}</strong>
+                </li>
+            </ol>
+        </nav>
+    </div>
+    <div class="col-md-2">
+        <p>
+            <img class="img-white-book" width="100%" src="{{ file_url(node.get('field_image').0.entity.uri.value) }}"
+                 alt="{{ node
+            .getTitle() }}"/>
+        </p>
+        <a target="_blank" class="button-download" href="
+            {% if logged_in %}
+                {{ file_url(node.get('field_file').0.entity.uri.value) }}" download="{{ node.getTitle() }}"
+        {% else %}
+            {{ url('user.login') }}"
+        {% endif %}
+        >
+        Télécharger <i class="material-icons ico-butt-download">&#xE2C4;</i>
+        </a>
+        <p class="small-text">
+            Ce livre blanc est édité par :
+        </p>
+        <p>
+            {% for editor in this_editor %}
+                {% if loop.index == 1 %}
+                    <img width="178"
+                         src="{{ file_url((editor.field_logo.0.entity.uri.value)) }}"
+                         alt="{{ node.getTitle() }}"/>
+                {% endif %}
+            {% endfor %}
+        </p>
+        <div>
+            <p class="small-text">
+                Cet éditeur propose également {{ editor_white_books|length }} livres blancs :
+            </p>
+            {% for whiteBook in editor_white_books %}
+                <div class="media">
+                    <div class="media-left">
+
+                        <img width="70" class="media-object" src="{{ file_url(whiteBook.field_image.0.entity.uri
+                        .value) }}" alt="{{ whiteBook.title.value }}">
+                    </div>
+                    <div class="media-body">
+                        <h4 class="media-heading">
+                            <a href="{{ path('entity.node.canonical', {'node': whiteBook.id}) }}">
+                                {{ whiteBook.title.value }}
+                            </a>
+                        </h4>
+
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-7">
+        <h1>{{ node.title.value }}</h1>
+        <div class="pb-20">
+            <span class="sub-title pr-10">
+                {{ createdDate|date('d/m/Y') }} |
+                <span class="author">
+                    {% for editor in this_editor %}
+                        {% if loop.index == 1 %}
+                            <a href="{{ path('entity.node.canonical', {'node': editor.id}) }}">{{ editor.getTitle() }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </span>
+            </span>
+            <span class="gray-text">
+                <span class="pr-10">
+                    <i class="material-icons">import_contacts</i>{{ node.get('field_nombre_de_pages').value }} pages
+                </span>
+                <span class="pr-10"><i
+                            class="material-icons">zoom_out_map</i>{{ node.get('field_format').value }}</span>
+                <span><i class="material-icons">flag</i>{{ node.get('field_langue').value }}</span>
+            </span>
+        </div>
+        <div class="pb-20">
+            <span class="sub-title">
+                <strong>
+                    {{ node.get('field_categorie_principale').entity.name.value }}
+                </strong>
+                {% for secondaryCategory in node.get('field_categories_secondaires') %}
+                    | {{ secondaryCategory.entity.name.value }}
+                {% endfor %}
+            </span>
+        </div>
+        <div class="pb-20">
+            {% for keyWord in node.get('field_key_words') %}
+                <span class="keywords">
+                    {{ keyWord.value|upper }}
+                </span>
+            {% endfor %}
+        </div>
+        <div class="stat-white-book pb-20">
+            <span class="pr-10">
+                <span class="rate-yellow ml-0">
+                    {% if ((moyenne_evaluation)/2) > 0
+                    and ((moyenne_evaluation)/2) <= 0.5 %}
+                        <i class="material-icons">star_half</i>
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                    {% elseif ((moyenne_evaluation)/2) > 0.5
+                    and ((moyenne_evaluation)/2) <= 1 %}
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                    {% elseif ((moyenne_evaluation)/2) > 1
+                    and ((moyenne_evaluation)/2) <= 1.5 %}
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star_half</i>
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                    {% elseif ((moyenne_evaluation)/2) > 1.5
+                    and ((moyenne_evaluation)/2) <= 2 %}
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                    {% elseif ((moyenne_evaluation)/2) > 2
+                    and ((moyenne_evaluation)/2) <= 2.5 %}
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star_half</i>
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                    {% elseif ((moyenne_evaluation)/2) > 2.5
+                    and ((moyenne_evaluation)/2) <= 3 %}
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                    {% elseif ((moyenne_evaluation)/2) > 3
+                    and ((moyenne_evaluation)/2) <= 3.5 %}
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star_half</i>
+                        <i class="material-icons">star_border</i>
+                    {% elseif ((moyenne_evaluation)/2) > 3.5
+                    and ((moyenne_evaluation)/2) <= 4 %}
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star_border</i>
+                    {% elseif ((moyenne_evaluation)/2) > 4
+                    and ((moyenne_evaluation)/2) <= 4.5 %}
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star_half</i>
+                    {% elseif ((moyenne_evaluation)/2) > 4.5
+                    and ((moyenne_evaluation)/2) <= 5 %}
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                        <i class="material-icons">star</i>
+                    {% else %}
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                        <i class="material-icons">star_border</i>
+                    {% endif %}
+                    </span>
+                <span class="number-stat">
+                    <span class="font-weight-700">{{ moyenne_evaluation/2 }}</span>
+                    ({{ node.comment.comment_count }} avis)
+                </span>
+            </span>
+            <span class="pr-10">
+                    <i class="material-icons">file_download</i>
+                <span class="number-stat">
+                    <span class="font-weight-700">{{ node.get('field_download_count').value }}</span>
+                    téléchargements
+                </span>
+            </span>
+            <span class="pr-10">
+                    <i class="material-icons">remove_red_eye</i>
+                <span class="number-stat">
+                    <span class="font-weight-700">{{ node.get('field_download_count').value }}</span>
+                    vues
+                </span>
+            </span>
+        </div>
+        {% if node.get('field_recommande_ce_livre_blanc').value %}
+            <div class="recommanded pb-20">
+                <span>
+                    <i class="material-icons">thumb_up</i>
+                    Livre Blanc recommandé par la rédaction
+                </span>
+            </div>
+        {% endif %}
+        <div class="resume font-weight-700 pb-30">
+            {{ node.get('field_resume').value }}
+        </div>
+        <div class="description pb-20">
+            {{ node.get('body').value|raw }}
+        </div>
+        <div class="row">
+            <div class="col-md-5">
+                <a target="_blank" class="button-download" href="
+                        {% if logged_in %}
+                            {{ file_url(node.get('field_file').0.entity.uri.value) }}" download="{{ node.getTitle() }}"
+                {% else %}
+                    {{ url('user.login') }}"
+                {% endif %}
+                >
+                Télécharger ce livre blanc<i class="material-icons ico-butt-download">file_download</i>
+                </a></div>
+            <div class="col-md-7 pt-10">
+                <span class="share-social-link pull-right">
+                    Partagez ce livre blanc :
+                        <i class="fa fb-share-button fa-facebook-square social-link facebook ml-5 mr-5 "
+                           aria-hidden="true"></i>
+                    <i class="fa fa-twitter-square social-link twitter mr-5" aria-hidden="true"></i>
+                    <i class="fa fa-google-plus-square social-link google-plus mr-5" aria-hidden="true"></i>
+                    <i class="fa fa-linkedin-square social-link linkedin mr-5" aria-hidden="true"></i>
+                    <i class="fa fa-pinterest-square social-link pinterest mr-5" aria-hidden="true"></i>
+                </span>
+
+            </div>
+        </div>
+        <div class="row">
+            {{ content.comment }}
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="row">
+            <div class="add">
+                {% for pub in long_pub %}
+                    <div>Publicité</div>
+                    <img width="275" src="{{ file_url(pub.field_image_longue.0.entity.uri.value) }}"
+                         alt="{{ pub.title.value }}" class="img-add"/>
+                {% endfor %}
+            </div>
+            {% for whiteBook in white_books_by_categ %}
+                <div class="media pl-15 pr-5">
+                    {% if loop.index == 1 %}
+                        <div class="media-heading text-same-category">
+                            <p class="title-same-category">
+                                Sur le même <strong>sujet</strong>
+                            </p>
+                            Voici une sélection de livres blancs publiés récemment qui peuvent également vous intéresser
+                            :
+                        </div>
+                    {% endif %}
+                    <div class="media-left">
+
+                        <img width="70" class="media-object" src="{{ file_url(whiteBook.field_image.0.entity.uri
+                        .value) }}" alt="{{ whiteBook.title.value }}">
+                    </div>
+                    <div class="media-body">
+                        <h4 class="media-heading">
+                            <a href="{{ path('entity.node.canonical', {'node': whiteBook.id}) }}">
+                                <p class="white-book-title-same-category">
+                                    <strong>{{ whiteBook.title.value }}</strong>
+                                </p>
+                                <p>par {% for editor in editor_by_categ %}
+                                        {% if loop.parent.loop.index == loop.index %}
+                                            {% for edit in  editor %}
+                                                {% if loop.index == 1 %}
+                                                    {{ edit.getTitle()|upper }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}</p>
+
+                                <p class="black-text">{{ whiteBook.date|date('d/m/Y') }}</p>
+                                <p>
+                                    <span class="rate-yellow ml-0">
+                                        {% for moyenne in moyenne_evaluation_by_categ %}
+                                            {% if loop.parent.loop.index == loop.index %}
+                                                {% if ((moyenne)/2) > 0
+                                                and ((moyenne)/2) <= 0.5 %}
+                                                    <i class="material-icons">star_half</i>
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                {% elseif ((moyenne)/2) > 0.5
+                                                and ((moyenne)/2) <= 1 %}
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                {% elseif ((moyenne)/2) > 1
+                                                and ((moyenne)/2) <= 1.5 %}
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star_half</i>
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                {% elseif ((moyenne)/2) > 1.5
+                                                and ((moyenne)/2) <= 2 %}
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                {% elseif ((moyenne)/2) > 2
+                                                and ((moyenne)/2) <= 2.5 %}
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star_half</i>
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                {% elseif ((moyenne)/2) > 2.5
+                                                and ((moyenne)/2) <= 3 %}
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                {% elseif ((moyenne)/2) > 3
+                                                and ((moyenne)/2) <= 3.5 %}
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star_half</i>
+                                                    <i class="material-icons">star_border</i>
+                                                {% elseif ((moyenne)/2) > 3.5
+                                                and ((moyenne)/2) <= 4 %}
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star_border</i>
+                                                {% elseif ((moyenne)/2) > 4
+                                                and ((moyenne)/2) <= 4.5 %}
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star_half</i>
+                                                {% elseif ((moyenne)/2) > 4.5
+                                                and ((moyenne)/2) <= 5 %}
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                    <i class="material-icons">star</i>
+                                                {% else %}
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                    <i class="material-icons">star_border</i>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </span>
+                                </p>
+                            </a>
+                        </h4>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

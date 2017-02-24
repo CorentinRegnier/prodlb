@@ -1,0 +1,130 @@
+<?php
+/**
+ * @file
+ * Theme functions
+ */
+
+// Include all files from the includes directory.
+$includes_path = dirname(__FILE__).'/includes/*.inc';
+foreach (glob($includes_path) as $filename) {
+    require_once dirname(__FILE__).'/includes/'.basename($filename);
+}
+
+function livresblancs_preprocess_node(&$variables)
+{
+    $currentUser = $variables['user']->getAccount()->id();
+    $node        = $variables['node'];
+
+    if ($node->field_categorie_principale != null) {
+        $evaluations            = [];
+        $editors                = [];
+        $queryWhiteBooksByCateg = \Drupal::entityQuery('node')
+            ->condition('status', 1)
+            ->condition('type', 'white_books')
+            ->condition('field_categorie_principale', $node->field_categorie_principale->getValue()[0]['target_id'])
+            ->condition('nid', $node->id(), '!=')
+            ->range(0, 4);
+
+        $nidWhBoByCateg                    = $queryWhiteBooksByCateg->execute();
+        $thisWhBoByCateg                   = \Drupal\node\Entity\Node::loadMultiple($nidWhBoByCateg);
+        $variables['white_books_by_categ'] = $thisWhBoByCateg;
+
+        foreach ($thisWhBoByCateg as $whiteBook) {
+            $queryEditorByCateg = \Drupal::entityQuery('node')
+                ->condition('status', 1)
+                ->condition('type', 'editeur')
+                ->condition('uid', $whiteBook->uid->getValue()[0]['target_id'])
+                ->range(0, 1);
+
+            $nidEBoByCateg  = $queryEditorByCateg->execute();
+            $thisEBoByCateg = \Drupal\node\Entity\Node::loadMultiple($nidEBoByCateg);
+            $editors []     = $thisEBoByCateg;
+
+            $cids = \Drupal::entityQuery('comment')
+                ->condition('status', 1)
+                ->condition('entity_id', $whiteBook->id())
+                ->condition('entity_type', 'node')
+                ->execute();
+
+            $evaluation = 0;
+            $ind        = 0;
+            foreach ($cids as $cid) {
+                $comment    = \Drupal\comment\Entity\Comment::load($cid);
+                $evaluation = $evaluation + $comment->get('field_evaluation')->getValue()[0]['value'];
+                $ind++;
+            }
+            if ($ind != 0) {
+                $evaluations[] = $evaluation / $ind;
+            }
+        }
+        $variables['moyenne_evaluation_by_categ'] = $evaluations;
+        $variables['editor_by_categ']             = $editors;
+    }
+
+    $queryWhiteBooks = \Drupal::entityQuery('node')
+        ->condition('status', 1)
+        ->condition('type', 'white_books')
+        ->condition('uid', $node->uid->getValue()[0]['target_id'])
+        ->condition('nid', $node->id(), '!=')
+        ->range(0, 4);
+
+    $queryAllWhiteBooks = \Drupal::entityQuery('node')
+        ->condition('status', 1)
+        ->condition('type', 'white_books')
+        ->condition('uid', $node->uid->getValue()[0]['target_id'])
+        ->condition('nid', $node->id(), '!=');
+
+    $queryLongAdd = \Drupal::entityQuery('node')
+        ->condition('status', 1)
+        ->condition('type', 'publicite_longue')
+        ->range(0, 1);
+    $queryLongAdd->addTag('random');
+
+    $queryAdd = \Drupal::entityQuery('node')
+        ->condition('status', 1)
+        ->condition('type', 'publicite')
+        ->range(0, 1);
+    $queryAdd->addTag('random');
+
+    $queryThisEditor = \Drupal::entityQuery('node')
+        ->condition('status', 1)
+        ->condition('type', 'editeur')
+        ->condition('uid', $node->uid->getValue()[0]['target_id'])
+        ->range(0, 1);
+
+    $cids = \Drupal::entityQuery('comment')
+        ->condition('status', 1)
+        ->condition('entity_id', $node->id())
+        ->condition('entity_type', 'node')
+        ->execute();
+
+    $evaluation = 0;
+    $ind        = 0;
+    foreach ($cids as $cid) {
+        $comment    = \Drupal\comment\Entity\Comment::load($cid);
+        $evaluation = $evaluation + $comment->get('field_evaluation')->getValue()[0]['value'];
+        $ind++;
+    }
+
+    $nidsWhiteBook = $queryWhiteBooks->execute();
+    $nidsAllWhiteBook = $queryAllWhiteBooks->execute();
+    $nidLongAdd    = $queryLongAdd->execute();
+    $nidAdd        = $queryAdd->execute();
+    $nidEditor     = $queryThisEditor->execute();
+
+    $thisEditor  = \Drupal\node\Entity\Node::loadMultiple($nidEditor);
+    $thisLongAdd = \Drupal\node\Entity\Node::loadMultiple($nidLongAdd);
+    $thisAdd     = \Drupal\node\Entity\Node::loadMultiple($nidAdd);
+    $whiteBooks  = \Drupal\node\Entity\Node::loadMultiple($nidsWhiteBook);
+    $allWhiteBooks = \Drupal\node\Entity\Node::loadMultiple($nidsAllWhiteBook);
+
+    $variables['this_editor']        = $thisEditor;
+    $variables['editor_white_books'] = $whiteBooks;
+    $variables['editor_all_white_books'] = $allWhiteBooks;
+    $variables['long_pub']           = $thisLongAdd;
+    $variables['add']                = $thisAdd;
+
+    if ($ind != 0) {
+        $variables['moyenne_evaluation'] = $evaluation / $ind;
+    }
+}
